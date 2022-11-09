@@ -16,14 +16,25 @@ public:
 	AMyCharacter();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
+	virtual void BeginPlay() override;
+	FHitResult PerformLineTrace(float Distance = 650.f , bool DrawDebug = false);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Building")
+		bool bInBuildMode = false;
+
+
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly, Category = "Building")
+		class UStaticMeshComponent* BuildMesh; 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	void  SetBuildEnabled(bool Enabled);
+	
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	bool GetBuildMode() const { return bInBuildMode; }
 
 };

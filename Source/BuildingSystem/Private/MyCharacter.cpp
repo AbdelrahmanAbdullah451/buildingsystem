@@ -15,6 +15,30 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BuildMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BuildMeshComponent"));
+	
+}
+
+FHitResult AMyCharacter::PerformLineTrace(float Distance , bool DrawDebug)
+{
+
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorForwardVector() * Distance; 
+
+
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility, params);
+
+	if (DrawDebug) {
+		DrawDebugLine(GetWorld(), Start , End, FColor::Red);
+	}
+
+	
+
+	return hit;
 	
 }
 
@@ -23,6 +47,11 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bInBuildMode) {
+		PerformLineTrace(650.f , true);
+	}
+	
+
 }
 
 // Called to bind functionality to input
@@ -30,5 +59,16 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AMyCharacter::SetBuildEnabled(bool Enabled)
+{
+	bInBuildMode = Enabled; 
+	if (bInBuildMode) {
+		BuildMesh->SetHiddenInGame(false);
+	}
+	else {
+		BuildMesh->SetHiddenInGame(true);
+	}
 }
 
