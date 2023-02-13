@@ -7,6 +7,7 @@
 #include "BuildingVisual.generated.h"
 
 class UStaticMeshComponent;
+class ABuilding;
 
 UCLASS()
 class BASEBUILDING_API ABuildingVisual : public AActor
@@ -23,8 +24,19 @@ protected:
 
 public:	
 	void SetBuildPosition(const FHitResult& Hit);
+	void SpawnBuilding();
+	void CycleMeshes();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 		UStaticMeshComponent* BuildMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Building")
+		TSubclassOf<ABuilding> BuildingClass;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Building")
+		TArray<class UStaticMesh* > BuildingMeshes;
+
+	uint8 BuildingMeshesIndex;
 };

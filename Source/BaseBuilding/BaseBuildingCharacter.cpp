@@ -51,11 +51,14 @@ ABaseBuildingCharacter::ABaseBuildingCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	bInBuildMode = false;
+	
 }
 
 void ABaseBuildingCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Builder = GetWorld()->SpawnActor<ABuildingVisual>(BuildingVisualClass);
 }
 	
 
@@ -111,8 +114,9 @@ void ABaseBuildingCharacter::LookUpAtRate(float Rate)
 void ABaseBuildingCharacter::SetBuildMode(bool Enabled)
 {
 	bInBuildMode = Enabled;
-
-	Builder->SetActorHiddenInGame(!bInBuildMode);
+	if(Builder){
+		Builder->SetActorHiddenInGame(!bInBuildMode);
+	}
 }
 
 void ABaseBuildingCharacter::Tick(float DeltaTime) {
@@ -120,6 +124,14 @@ void ABaseBuildingCharacter::Tick(float DeltaTime) {
 	if (bInBuildMode && Builder) {
 		Builder->SetBuildPosition(PerformLineTrace(700.0f , true));
 	}
+}
+
+void ABaseBuildingCharacter::SpawnBuilding()
+{
+	if (bInBuildMode && Builder) {
+		Builder->SpawnBuilding();
+	}
+
 }
 
 void ABaseBuildingCharacter::MoveForward(float Value)

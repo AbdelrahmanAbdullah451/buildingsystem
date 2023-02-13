@@ -4,6 +4,7 @@
 #include "BuildingVisual.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Building.h"
 
 
 // Sets default values
@@ -15,6 +16,7 @@ ABuildingVisual::ABuildingVisual()
 	BuildMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BuildMeshComponent"));
 	RootComponent = BuildMesh;
 
+	BuildingMeshesIndex = 0; 
 }
 
 // Called when the game starts or when spawned
@@ -23,11 +25,34 @@ void ABuildingVisual::BeginPlay()
 	Super::BeginPlay();
 
 	SetActorHiddenInGame(true);
+
+	if (BuildingMeshes[BuildingMeshesIndex]) {
+		BuildMesh->SetStaticMesh(BuildingMeshes[BuildingMeshesIndex]);
+		
+	}
 }
 
 void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 {
-	BuildMesh->SetWorldLocation(Hit.Location);
+	if (Hit.bBlockingHit) {
+		this->SetActorHiddenInGame(false);
+		BuildMesh->SetWorldLocation(Hit.Location);
+	}
+	else {
+		this->SetActorHiddenInGame(true);
+	}
+}
+
+void ABuildingVisual::SpawnBuilding()
+{
+	if (BuildingClass && !IsHidden() ) {
+		GetWorld()->SpawnActor<ABuilding>(BuildingClass , GetActorTransform());
+	}
+}
+
+void ABuildingVisual::CycleMeshes()
+{
+	
 }
 
 

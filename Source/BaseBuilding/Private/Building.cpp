@@ -22,14 +22,7 @@ ABuilding::ABuilding()
 void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
-	FTransform MeshTransform = FTransform();
-	for (uint8 i = 0; i < 3; i++)
-	{
-		FoundationInstancedMesh->AddInstance(MeshTransform);
-		FVector MeshLocation = MeshTransform.GetLocation();
-		MeshLocation.Z += 250;
-		MeshTransform.SetLocation(MeshLocation);
-	}
+	FoundationInstancedMesh->AddInstance(FTransform());
 }
 
 

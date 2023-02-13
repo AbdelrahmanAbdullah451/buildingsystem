@@ -38,10 +38,11 @@ protected:
 		bool bInBuildMode;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
-		TSubclassOf<ABuildingVisual> BuildingClass;
+		TSubclassOf<ABuildingVisual> BuildingVisualClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 		ABuildingVisual* Builder;
+
 public:
 
 	virtual void Tick(float DeltaTime) override;
@@ -56,6 +57,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
 		bool GetBuildMode() const { return bInBuildMode; };
+
+	UFUNCTION(BlueprintCallable, Category = "Building")
+		void SpawnBuilding();
+
+
+
 protected:
 	void MoveForward(float Value);
 
