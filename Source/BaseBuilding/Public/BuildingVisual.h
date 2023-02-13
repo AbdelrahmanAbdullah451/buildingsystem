@@ -22,5 +22,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	void SetBuildPosition(const FHitResult& Hit);
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
+		UStaticMeshComponent* BuildMesh;
 };

@@ -2,6 +2,7 @@
 
 #include "BaseBuildingCharacter.h"
 
+#include "BuildingVisual.h"
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -50,7 +51,11 @@ ABaseBuildingCharacter::ABaseBuildingCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	bInBuildMode = false;
-	BuildMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BuildMeshComponent"));
+}
+
+void ABaseBuildingCharacter::BeginPlay()
+{
+	Super::BeginPlay();
 }
 	
 
@@ -106,25 +111,14 @@ void ABaseBuildingCharacter::LookUpAtRate(float Rate)
 void ABaseBuildingCharacter::SetBuildMode(bool Enabled)
 {
 	bInBuildMode = Enabled;
-	if (bInBuildMode) {
-		BuildMesh->SetHiddenInGame(true);
-	}
-	else {
-		BuildMesh->SetHiddenInGame(false);
-	}
+
+	Builder->SetActorHiddenInGame(!bInBuildMode);
 }
 
 void ABaseBuildingCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	if (bInBuildMode) {
-		FHitResult Hit = PerformLineTrace(700, true);
-		if (Hit.bBlockingHit) {
-			BuildMesh->SetWorldLocation(Hit.Location);
-			BuildMesh->SetHiddenInGame(false);
-		}
-		else {
-			BuildMesh->SetHiddenInGame(true);
-		}
+	if (bInBuildMode && Builder) {
+		Builder->SetBuildPosition(PerformLineTrace(700.0f , true));
 	}
 }
 

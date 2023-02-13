@@ -7,6 +7,7 @@
 #include "BaseBuildingCharacter.generated.h"
 
 class UStaticMeshComponent;
+class ABuildingVisual;
 
 UCLASS(config=Game)
 class ABaseBuildingCharacter : public ACharacter
@@ -31,13 +32,16 @@ public:
 	
 
 protected:
+	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Building")
 		bool bInBuildMode;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
-		UStaticMeshComponent* BuildMesh;
+		TSubclassOf<ABuildingVisual> BuildingClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
+		ABuildingVisual* Builder;
 public:
 
 	virtual void Tick(float DeltaTime) override;
@@ -49,6 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
 		void SetBuildMode(bool Enabled);
+
 	UFUNCTION(BlueprintCallable, Category = "Building")
 		bool GetBuildMode() const { return bInBuildMode; };
 protected:
