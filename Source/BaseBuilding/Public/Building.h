@@ -20,14 +20,18 @@ public:
 		void DestroyInstance(FVector Fhit);
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
-		FTransform GetInstancedSocket(UInstancedStaticMeshComponent* InstancedComponent , int32 MeshIndex, 
+		FTransform GetInstancedSocketTransform(UInstancedStaticMeshComponent* InstancedComponent , int32 MeshIndex, 
 			const FName& SocketName , bool& Success, bool WorldSpace = false);
 
+	int32 GetHitIndex(const FHitResult & Hit);
+
+	FTransform GetHitSocketTransform(const FHitResult& Hit , float ValidHitDistance = 100.0f);
 protected:
 	UPROPERTY(EditAnywhere, Category="Building")
 	UInstancedStaticMeshComponent* FoundationInstancedMesh;
 
-
+	UPROPERTY(EditAnywhere, Category = "Building")
+		UInstancedStaticMeshComponent* WallInstancedMesh;
 	virtual void BeginPlay() override;
 
 };

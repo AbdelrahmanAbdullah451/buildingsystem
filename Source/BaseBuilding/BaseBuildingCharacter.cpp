@@ -134,6 +134,13 @@ void ABaseBuildingCharacter::SpawnBuilding()
 
 }
 
+void ABaseBuildingCharacter::CycleBuildingMesh()
+{
+	if (bInBuildMode && Builder) {
+		Builder->CycleMeshes();
+	}
+}
+
 void ABaseBuildingCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))

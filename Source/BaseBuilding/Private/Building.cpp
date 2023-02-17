@@ -15,6 +15,7 @@ ABuilding::ABuilding()
  	
 	RootComponent = FoundationInstancedMesh;
 
+	WallInstancedMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("WallInstancedStaticMesh"));
 }
 
 
@@ -37,7 +38,7 @@ void ABuilding::DestroyInstance(FVector Fhit)
 
 }
 
-FTransform ABuilding::GetInstancedSocket(UInstancedStaticMeshComponent* InstancedComponent,int32 MeshIndex,
+FTransform ABuilding::GetInstancedSocketTransform(UInstancedStaticMeshComponent* InstancedComponent,int32 MeshIndex,
 	const FName& SocketName, bool& Success, bool WorldSpace)
 {
 	Success = true;
@@ -74,3 +75,44 @@ FTransform ABuilding::GetInstancedSocket(UInstancedStaticMeshComponent* Instance
 	Success = false;
 	return FTransform();
 }
+
+int32 ABuilding::GetHitIndex(const FHitResult& Hit)
+{
+	TArray<int32> HitIndex = FoundationInstancedMesh->GetInstancesOverlappingSphere(Hit.Location , 5.0f);
+	DrawDebugSphere(GetWorld() , Hit.Location , 5.0f , 10 , FColor::Blue );
+	//UE_LOG(LogTemp, Error, TEXT("Hit Index: %s"), *Hit.GetActor()->GetName());
+	if (HitIndex.Num() > 0 && HitIndex.Num()) {
+		return HitIndex[0];
+	}
+	return -1;
+}
+
+FTransform ABuilding::GetHitSocketTransform(const FHitResult& Hit, float ValidHitDistance)
+{
+
+	int32 HitIndex = GetHitIndex(Hit);
+	if (HitIndex != -1) {
+		TArray<FName> SocketNames = FoundationInstancedMesh->GetAllSocketNames();
+		bool isSuccessfull = false;
+
+		for (const FName x : SocketNames) {
+			FTransform SocketTransform = GetInstancedSocketTransform(FoundationInstancedMesh ,HitIndex , x , isSuccessfull, true);
+			if (FVector::Distance(SocketTransform.GetLocation(),Hit.Location) <= ValidHitDistance) {
+				return SocketTransform;
+			}
+		}
+		
+		
+	}
+
+	return  FTransform();
+}
+
+
+/*	FVector SocketLocation = FoundationInstancedMesh->GetSocketTransform(SocketNames[i]).GetLocation();
+
+			double CurrentDistance = FVector::Distance(SocketLocation, Hit.Location);
+
+			if (double newDis = FVector::Distance(FoundationInstancedMesh->GetSocketTransform(SocketNames[i]).GetLocation(), Hit.Location)) {
+
+}*/

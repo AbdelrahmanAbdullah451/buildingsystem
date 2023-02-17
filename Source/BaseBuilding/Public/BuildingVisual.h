@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "DataTypes.h"
+
 #include "BuildingVisual.generated.h"
 
 class UStaticMeshComponent;
 class ABuilding;
-
+class UMaterialInstance;
 UCLASS()
 class BASEBUILDING_API ABuildingVisual : public AActor
 {
@@ -36,7 +38,17 @@ protected:
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
-		TArray<class UStaticMesh* > BuildingMeshes;
+		TArray<FBuildingVisualType > BuildingTypes;
 
-	uint8 BuildingMeshesIndex;
+	ABuilding* GetHitBuilding(const FHitResult& Hit);
+
+	uint8 BuildingTypeIndex;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Building")
+	UMaterialInstance* MaterialTrue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Building")
+	UMaterialInstance* MaterialFalse;
+
+	bool bIsMaterialTrue;
 };
