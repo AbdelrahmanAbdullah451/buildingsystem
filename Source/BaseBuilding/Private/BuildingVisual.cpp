@@ -7,7 +7,6 @@
 #include "Building.h"
 
 
-// Sets default values
 ABuildingVisual::ABuildingVisual()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -21,7 +20,6 @@ ABuildingVisual::ABuildingVisual()
 	bIsMaterialTrue = false;
 }
 
-// Called when the game starts or when spawned
 void ABuildingVisual::BeginPlay()
 {
 	Super::BeginPlay();
@@ -43,15 +41,21 @@ ABuilding* ABuildingVisual::GetHitBuilding(const FHitResult& Hit)
 {
 	return Cast<ABuilding>(Hit.GetActor());
 }
+
+
+
+
+
 void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 {
 	if (Hit.bBlockingHit) {
 
-		UE_LOG(LogTemp , Warning , TEXT("SetBuildPosition"));
+		
 		this->SetActorHiddenInGame(false);
-		if (ABuilding * HitBuilding = GetHitBuilding(Hit)) {
+		InteractingBuilding = GetHitBuilding(Hit);
+		if (InteractingBuilding) {
 
-			FTransform SocketTransform = HitBuilding->GetHitSocketTransform(Hit );
+			FTransform SocketTransform = InteractingBuilding->GetHitSocketTransform(Hit);
 			if (!SocketTransform.Equals(FTransform())) {
 				SetActorTransform(SocketTransform);
 				if (MaterialTrue && !bIsMaterialTrue) {
@@ -73,6 +77,7 @@ void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 		}
 	}
 	else {
+		InteractingBuilding = nullptr;
 		this->SetActorHiddenInGame(true);
 	}
 }
@@ -80,7 +85,13 @@ void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 void ABuildingVisual::SpawnBuilding()
 {
 	if (BuildingClass && !IsHidden() ) {
-		GetWorld()->SpawnActor<ABuilding>(BuildingClass , GetActorTransform());
+		if (InteractingBuilding && bIsMaterialTrue) {
+
+			InteractingBuilding->AddInstance(GetActorTransform() , BuildingTypes[BuildingTypeIndex].BuildType);
+		}
+		else {
+			GetWorld()->SpawnActor<ABuilding>(BuildingClass, GetActorTransform());
+		}
 	}
 }
 

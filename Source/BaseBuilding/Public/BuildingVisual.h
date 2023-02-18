@@ -51,4 +51,8 @@ protected:
 	UMaterialInstance* MaterialFalse;
 
 	bool bIsMaterialTrue;
+
+	ABuilding* InteractingBuilding;
+
+	
 };

@@ -26,6 +26,19 @@ void ABuilding::BeginPlay()
 	FoundationInstancedMesh->AddInstance(FTransform());
 }
 
+void ABuilding::AddInstance(const FTransform& ActorTransform , EBuildType BuildType)
+{
+	switch (BuildType) {
+		case EBuildType::Foundation :
+			FoundationInstancedMesh->AddInstanceWorldSpace(ActorTransform);
+			break;
+		case EBuildType::Wall:
+			WallInstancedMesh->AddInstanceWorldSpace(ActorTransform);
+			break;
+	}
+	
+}
+
 
 
 void ABuilding::DestroyInstance(FVector Fhit)
@@ -78,8 +91,8 @@ FTransform ABuilding::GetInstancedSocketTransform(UInstancedStaticMeshComponent*
 
 int32 ABuilding::GetHitIndex(const FHitResult& Hit)
 {
-	TArray<int32> HitIndex = FoundationInstancedMesh->GetInstancesOverlappingSphere(Hit.Location , 5.0f);
-	DrawDebugSphere(GetWorld() , Hit.Location , 5.0f , 10 , FColor::Blue );
+	TArray<int32> HitIndex = FoundationInstancedMesh->GetInstancesOverlappingSphere(Hit.Location , 10.0f);
+	DrawDebugSphere(GetWorld() , Hit.Location , 10.0f , 10 , FColor::Blue );
 	//UE_LOG(LogTemp, Error, TEXT("Hit Index: %s"), *Hit.GetActor()->GetName());
 	if (HitIndex.Num() > 0 && HitIndex.Num()) {
 		return HitIndex[0];
@@ -94,15 +107,22 @@ FTransform ABuilding::GetHitSocketTransform(const FHitResult& Hit, float ValidHi
 	if (HitIndex != -1) {
 		TArray<FName> SocketNames = FoundationInstancedMesh->GetAllSocketNames();
 		bool isSuccessfull = false;
-
+		/*for (const FName x : SocketNames) {
+			UE_LOG(LogTemp, Warning, TEXT("Hlmy : %s"), *x.ToString());
+		}*/
 		for (const FName x : SocketNames) {
 			FTransform SocketTransform = GetInstancedSocketTransform(FoundationInstancedMesh ,HitIndex , x , isSuccessfull, true);
 			if (FVector::Distance(SocketTransform.GetLocation(),Hit.Location) <= ValidHitDistance) {
+
 				return SocketTransform;
 			}
+			else {
+				if (helmy) {
+					helmy = false;
+					UE_LOG(LogTemp, Warning, TEXT("Hlmy : %s"), *x.ToString());
+				}
+			}
 		}
-		
-		
 	}
 
 	return  FTransform();

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "DataTypes.h"
+
 #include "Building.generated.h"
 
 class UInstancedStaticMeshComponent;
@@ -26,6 +28,11 @@ public:
 	int32 GetHitIndex(const FHitResult & Hit);
 
 	FTransform GetHitSocketTransform(const FHitResult& Hit , float ValidHitDistance = 100.0f);
+
+
+	void AddInstance(const FTransform& ActorTransform , EBuildType BuildType);
+
+
 protected:
 	UPROPERTY(EditAnywhere, Category="Building")
 	UInstancedStaticMeshComponent* FoundationInstancedMesh;
@@ -34,4 +41,5 @@ protected:
 		UInstancedStaticMeshComponent* WallInstancedMesh;
 	virtual void BeginPlay() override;
 
+	bool helmy= true;
 };
