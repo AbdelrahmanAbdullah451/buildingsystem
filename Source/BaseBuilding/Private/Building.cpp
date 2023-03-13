@@ -16,6 +16,8 @@ ABuilding::ABuilding()
 	RootComponent = FoundationInstancedMesh;
 
 	WallInstancedMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("WallInstancedStaticMesh"));
+
+	CeilingInstancedMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("CeilingInstancedStaticMesh"));
 }
 
 
@@ -24,16 +26,29 @@ void ABuilding::BeginPlay()
 {
 	Super::BeginPlay();
 	FoundationInstancedMesh->AddInstance(FTransform());
+
+	 MeshInstancedSockets = FoundationInstancedMesh->GetAllSocketNames();
+	 MeshInstancedSockets.Append(WallInstancedMesh->GetAllSocketNames());
+	 MeshInstancedSockets.Append(WallInstancedMesh->GetAllSocketNames());
 }
 
-void ABuilding::AddInstance(const FTransform& ActorTransform , EBuildType BuildType)
+
+void ABuilding::AddInstance(const FBuildingSocketData& BuildingSocketData ,EBuildType BuildType)
 {
+
+	//if (BuildingSocketData.InstancedComponent) {
+	//	BuildingSocketData.InstancedComponent->AddInstanceWorldSpace(BuildingSocketData.SocketTransform);
+	//}
+
 	switch (BuildType) {
 		case EBuildType::Foundation :
-			FoundationInstancedMesh->AddInstanceWorldSpace(ActorTransform);
+			FoundationInstancedMesh->AddInstanceWorldSpace(BuildingSocketData.SocketTransform);
 			break;
 		case EBuildType::Wall:
-			WallInstancedMesh->AddInstanceWorldSpace(ActorTransform);
+			WallInstancedMesh->AddInstanceWorldSpace(BuildingSocketData.SocketTransform);
+			break;
+		case EBuildType::Ceiling:
+			CeilingInstancedMesh->AddInstanceWorldSpace(BuildingSocketData.SocketTransform);
 			break;
 	}
 	
@@ -51,10 +66,20 @@ void ABuilding::DestroyInstance(FVector Fhit)
 
 }
 
-FTransform ABuilding::GetInstancedSocketTransform(UInstancedStaticMeshComponent* InstancedComponent,int32 MeshIndex,
-	const FName& SocketName, bool& Success, bool WorldSpace)
+FTransform ABuilding::GetInstancedSocketTransform(UInstancedStaticMeshComponent* InstancedComponent,int32 InstanceIndex,
+	const FName& SocketName)
 {
-	Success = true;
+	if (InstancedComponent && InstancedComponent->IsValidInstance(InstanceIndex)) {
+
+		FTransform InstanceTransform = FTransform();
+		InstancedComponent->GetInstanceTransform(InstanceIndex, InstanceTransform,true);
+		FTransform SocketTransform = InstancedComponent->GetSocketTransform(SocketName,RTS_Component);
+		InstanceTransform = SocketTransform * InstanceTransform;
+
+		return InstanceTransform;
+	}
+
+	/*Success = true;
 	if (InstancedComponent && InstancedComponent->IsValidInstance(MeshIndex)) {
 
 		FTransform InstanceTransform = FTransform();
@@ -85,47 +110,66 @@ FTransform ABuilding::GetInstancedSocketTransform(UInstancedStaticMeshComponent*
 
 		return RelativeTransform;
 	}
-	Success = false;
+	Success = false;*/
 	return FTransform();
 }
 
 int32 ABuilding::GetHitIndex(const FHitResult& Hit)
 {
-	TArray<int32> HitIndex = FoundationInstancedMesh->GetInstancesOverlappingSphere(Hit.Location , 10.0f);
 	DrawDebugSphere(GetWorld() , Hit.Location , 10.0f , 10 , FColor::Blue );
-	//UE_LOG(LogTemp, Error, TEXT("Hit Index: %s"), *Hit.GetActor()->GetName());
-	if (HitIndex.Num() > 0 && HitIndex.Num()) {
-		return HitIndex[0];
-	}
-	return -1;
+	return Hit.Item;
+	
 }
 
-FTransform ABuilding::GetHitSocketTransform(const FHitResult& Hit, float ValidHitDistance)
+
+bool ABuilding::isValidSocket(UInstancedStaticMeshComponent* HitComponent, const FName& Filter, const FName& SocketName)
+{
+	bool bSuccess = true;
+	if (!HitComponent->DoesSocketExist(SocketName)) {
+		bSuccess = false;
+		return bSuccess;
+	}
+	FString FilterString = Filter.ToString();
+	FString SocketNameString = SocketName.ToString();
+	if (!SocketNameString.Contains(FilterString,ESearchCase::CaseSensitive)) {
+		bSuccess = false;
+	}
+	return bSuccess;
+
+}
+
+FBuildingSocketData ABuilding::GetHitSocketTransform(const FHitResult& Hit ,const FName& Filter,float ValidHitDistance)
 {
 
-	int32 HitIndex = GetHitIndex(Hit);
-	if (HitIndex != -1) {
-		TArray<FName> SocketNames = FoundationInstancedMesh->GetAllSocketNames();
-		bool isSuccessfull = false;
-		/*for (const FName x : SocketNames) {
-			UE_LOG(LogTemp, Warning, TEXT("Hlmy : %s"), *x.ToString());
-		}*/
-		for (const FName x : SocketNames) {
-			FTransform SocketTransform = GetInstancedSocketTransform(FoundationInstancedMesh ,HitIndex , x , isSuccessfull, true);
-			if (FVector::Distance(SocketTransform.GetLocation(),Hit.Location) <= ValidHitDistance) {
+	FBuildingSocketData SocketData = FBuildingSocketData();
+	if (UInstancedStaticMeshComponent* HitComponent = Cast<UInstancedStaticMeshComponent>(Hit.GetComponent())) {
 
-				return SocketTransform;
-			}
-			else {
-				if (helmy) {
-					helmy = false;
-					UE_LOG(LogTemp, Warning, TEXT("Hlmy : %s"), *x.ToString());
+		int32 HitIndex = GetHitIndex(Hit);
+		
+		if (HitIndex != -1) {
+		
+			/*for (const FName x : SocketNames) {
+				UE_LOG(LogTemp, Warning, TEXT("Hlmy : %s"), *x.ToString());
+			}*/
+			for (const FName& x : MeshInstancedSockets) {
+
+				if (isValidSocket(HitComponent , Filter , x)) {
+					FTransform SocketTransform = GetInstancedSocketTransform(HitComponent, HitIndex, x);
+					if (FVector::Distance(SocketTransform.GetLocation(), Hit.Location) <= ValidHitDistance) {
+
+						SocketData.Index = HitIndex;
+						SocketData.InstancedComponent = HitComponent;
+						SocketData.SocketName = x;
+						SocketData.SocketTransform = SocketTransform;
+						return SocketData;
+					}
 				}
+			
 			}
 		}
 	}
 
-	return  FTransform();
+	return SocketData;
 }
 
 

@@ -23,14 +23,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Building")
 		FTransform GetInstancedSocketTransform(UInstancedStaticMeshComponent* InstancedComponent , int32 MeshIndex, 
-			const FName& SocketName , bool& Success, bool WorldSpace = false);
+			const FName& SocketName );
 
 	int32 GetHitIndex(const FHitResult & Hit);
 
-	FTransform GetHitSocketTransform(const FHitResult& Hit , float ValidHitDistance = 100.0f);
+	FBuildingSocketData GetHitSocketTransform(const FHitResult& Hit ,const FName& Filter, float ValidHitDistance = 100.0f);
 
 
-	void AddInstance(const FTransform& ActorTransform , EBuildType BuildType);
+	void AddInstance(const FBuildingSocketData& BuildingSocketData , EBuildType BuildType);
 
 
 protected:
@@ -39,7 +39,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Building")
 		UInstancedStaticMeshComponent* WallInstancedMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Building")
+		UInstancedStaticMeshComponent* CeilingInstancedMesh;
+
+	TArray<FName> MeshInstancedSockets;
+
+
+
 	virtual void BeginPlay() override;
 
-	bool helmy= true;
+	bool isValidSocket(UInstancedStaticMeshComponent * HitComponent ,const FName & Filter , const FName & SocketName);
+
 };

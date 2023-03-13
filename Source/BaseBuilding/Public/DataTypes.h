@@ -6,7 +6,8 @@
 UENUM(BlueprintType)
 enum class EBuildType : uint8 {
 	Foundation		UMETA(DisplayName = "Foundation") , 
-	Wall			UMETA(DisplayName = "Wall")
+	Wall			UMETA(DisplayName = "Wall") ,
+	Ceiling			UMETA(DisplayName = "Ceiling")
 };
 
 
@@ -19,6 +20,21 @@ struct FBuildingVisualType
 		class UStaticMesh* BuildingMesh;
 
 
-	UPROPERTY(EditDefaultsOnly, Category = "Building")
-		EBuildType BuildType;
+		UPROPERTY(EditDefaultsOnly, Category = "Building")
+			EBuildType BuildType;
+
+		UPROPERTY(EditDefaultsOnly, Category = "Building")
+			FName FilterCharacter;
+};
+
+USTRUCT(BlueprintType)
+struct FBuildingSocketData {
+
+	GENERATED_BODY()
+
+		class UInstancedStaticMeshComponent* InstancedComponent;
+		int32 Index;
+		FName SocketName;
+		FTransform SocketTransform;
+
 };

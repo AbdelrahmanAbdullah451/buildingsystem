@@ -19,15 +19,20 @@ class BASEBUILDING_API ABuildingVisual : public AActor
 public:	
 
 	ABuildingVisual();
+	void SetBuildPosition(const FHitResult& Hit);
+	void SpawnBuilding();
+	void CycleMeshes();
 
 protected:
 
 	virtual void BeginPlay() override;
 
-public:	
-	void SetBuildPosition(const FHitResult& Hit);
-	void SpawnBuilding();
-	void CycleMeshes();
+	ABuilding* GetHitBuilding(const FHitResult& Hit);
+
+	void SetMeshTo(EBuildType BuildType);
+
+	void ReturnMeshToSelected();
+
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
@@ -40,7 +45,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Building")
 		TArray<FBuildingVisualType > BuildingTypes;
 
-	ABuilding* GetHitBuilding(const FHitResult& Hit);
 
 	uint8 BuildingTypeIndex;
 
@@ -51,8 +55,9 @@ protected:
 	UMaterialInstance* MaterialFalse;
 
 	bool bIsMaterialTrue;
+	bool bReturnedMesh;
 
 	ABuilding* InteractingBuilding;
 
-	
+	FBuildingSocketData SocketData;
 };

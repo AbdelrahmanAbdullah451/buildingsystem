@@ -18,6 +18,7 @@ ABuildingVisual::ABuildingVisual()
 	BuildingTypeIndex = 0;
 
 	bIsMaterialTrue = false;
+	bReturnedMesh = true;
 }
 
 void ABuildingVisual::BeginPlay()
@@ -42,6 +43,26 @@ ABuilding* ABuildingVisual::GetHitBuilding(const FHitResult& Hit)
 	return Cast<ABuilding>(Hit.GetActor());
 }
 
+void ABuildingVisual::SetMeshTo(EBuildType BuildType)
+{
+	bReturnedMesh = false;
+	for (const FBuildingVisualType& Building: BuildingTypes) {
+		if (Building.BuildType == BuildType) {
+			BuildMesh->SetStaticMesh(Building.BuildingMesh);
+			return;
+		}
+
+	}
+}
+
+void ABuildingVisual::ReturnMeshToSelected()
+{
+	bReturnedMesh = true;
+	if (BuildingTypes[BuildingTypeIndex].BuildingMesh) {
+		BuildMesh->SetStaticMesh(BuildingTypes[BuildingTypeIndex].BuildingMesh);
+	}
+}
+
 
 
 
@@ -54,10 +75,14 @@ void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 		this->SetActorHiddenInGame(false);
 		InteractingBuilding = GetHitBuilding(Hit);
 		if (InteractingBuilding) {
+			if (!bReturnedMesh)
+			{
+				ReturnMeshToSelected();
+			}
 
-			FTransform SocketTransform = InteractingBuilding->GetHitSocketTransform(Hit);
-			if (!SocketTransform.Equals(FTransform())) {
-				SetActorTransform(SocketTransform);
+			 SocketData = InteractingBuilding->GetHitSocketTransform(Hit ,BuildingTypes[BuildingTypeIndex].FilterCharacter, 75.0f);
+			if (!SocketData.SocketTransform.Equals(FTransform())) {
+				SetActorTransform(SocketData.SocketTransform);
 				if (MaterialTrue && !bIsMaterialTrue) {
 					bIsMaterialTrue = true;
 					BuildMesh->SetMaterial(0 , MaterialTrue);
@@ -73,7 +98,11 @@ void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 			}
 		}
 		else {
+			if(bReturnedMesh){
+				SetMeshTo(EBuildType::Foundation);
+			}
 			BuildMesh->SetWorldLocation(Hit.Location);
+
 		}
 	}
 	else {
@@ -85,9 +114,11 @@ void ABuildingVisual::SetBuildPosition(const FHitResult& Hit)
 void ABuildingVisual::SpawnBuilding()
 {
 	if (BuildingClass && !IsHidden() ) {
-		if (InteractingBuilding && bIsMaterialTrue) {
-
-			InteractingBuilding->AddInstance(GetActorTransform() , BuildingTypes[BuildingTypeIndex].BuildType);
+		if (InteractingBuilding ) {
+			if (bIsMaterialTrue) {
+				InteractingBuilding->AddInstance(SocketData , BuildingTypes[BuildingTypeIndex].BuildType);
+			}
+			
 		}
 		else {
 			GetWorld()->SpawnActor<ABuilding>(BuildingClass, GetActorTransform());
@@ -97,11 +128,14 @@ void ABuildingVisual::SpawnBuilding()
 
 void ABuildingVisual::CycleMeshes()
 {
-	if (++BuildingTypeIndex >= BuildingTypes.Num()) {
-		BuildingTypeIndex = 0;
-	}
-	if (BuildingTypes[BuildingTypeIndex].BuildingMesh) {
-		BuildMesh->SetStaticMesh(BuildingTypes[BuildingTypeIndex].BuildingMesh);
+	if (bReturnedMesh)
+	{
+		if (++BuildingTypeIndex >= BuildingTypes.Num()) {
+			BuildingTypeIndex = 0;
+		}
+		if (BuildingTypes[BuildingTypeIndex].BuildingMesh) {
+			BuildMesh->SetStaticMesh(BuildingTypes[BuildingTypeIndex].BuildingMesh);
+		}
 	}
 }
 
